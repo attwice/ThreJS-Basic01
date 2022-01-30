@@ -2,10 +2,12 @@ import './style.css'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import * as dat from 'dat.gui'
+import { PointLightHelper, Scene } from 'three'
 
 //Loader
 const textureLoader = new THREE.TextureLoader()
 const normalTexture = textureLoader.load('/textures/earth_normalmap_8192x4096.jpg')
+const Texture = textureLoader.load('/textures/earth 3.jpg')
 
 // Debug
 const gui = new dat.GUI()
@@ -26,7 +28,8 @@ const geometry = new THREE.SphereBufferGeometry(15, 32, 32);
 const material = new THREE.MeshStandardMaterial()
 material.metalness = 0.7
 material.roughness = 0.2
-material.color = new THREE.Color(0x893400)
+material.color = new THREE.Color(0xffffff)
+material.map = Texture;
 material.normalMap = normalTexture;
 
 // Mesh
@@ -35,19 +38,58 @@ scene.add(sphere)
 
 // Lights
 
-const pointLight = new THREE.PointLight(0xffffff, 0.1)
-pointLight.position.x = 20 
-pointLight.position.y = 30
-pointLight.position.z = 40
-scene.add(pointLight)
+// const pointLight = new THREE.PointLight(0xffffff, 10)
+// pointLight.position.x = 20 
+// pointLight.position.y = 30
+// pointLight.position.z = 40
+// scene.add(pointLight)
+    //Red light
+const pointLight2 = new THREE.PointLight(0xff0000, 20)
+pointLight2.position.set(-23, 30, 6.5)
+scene.add(pointLight2)
 
-const pointLight2 = new THREE.PointLight(0xff0000, 2)
-pointLight2.position.set(40, 10, 40)
-pointLight2.intensity = 2
-scene.add(pointLight)
+const light2 = gui.addFolder('Light Red')
 
-gui.add(pointLight2.position, 'y').min(-30).max(30)
+light2.add(pointLight2.position, 'x').min(-30).max(30).step(0.5)
+light2.add(pointLight2.position, 'y').min(-30).max(30).step(0.5)
+light2.add(pointLight2.position, 'z').min(-30).max(30).step(0.5)
+light2.add(pointLight2, 'intensity').min(0).max(30).step(1)
 
+const light2Color = {
+    color: 0xff0000
+}
+
+light2.addColor(light2Color, 'color')
+    .onChange(() => {
+        pointLight2.color.set(light2Color.color)
+    })
+
+const pointLightHelper = new THREE.PointLightHelper(pointLight2, 2)
+scene.add(pointLightHelper) 
+
+//Blue light
+const pointLight3 = new THREE.PointLight(0x0000ff, 20)
+pointLight3.position.set(24, -30, 2.5)
+scene.add(pointLight3)
+
+const light3 = gui.addFolder('Light Blue')
+
+light3.add(pointLight3.position, 'x').min(-30).max(30).step(0.5)
+light3.add(pointLight3.position, 'y').min(-30).max(30).step(0.5)
+light3.add(pointLight3.position, 'z').min(-30).max(30).step(0.5)
+light3.add(pointLight3, 'intensity').min(0).max(30).step(1)
+
+const light3Color = {
+    color: 0x0000ff
+}
+
+light3.addColor(light3Color, 'color')
+    .onChange(() => {
+        pointLight3.color.set(light3Color.color)
+    })
+
+const pointLightHelper2 = new THREE.PointLightHelper(pointLight3, 2)
+scene.add(pointLightHelper2) 
 /**
  * Sizes
  */
@@ -101,19 +143,25 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
 document.addEventListener('mousemove', onDocumentMouseMove)
 
-let mouseX = 0;
+let mouseX = 0; 
 let mouseY = 0;
 
 let targetX = 0;
 let targetY = 0;
 
-const windowX = window.innerWidth / 2;
+const windowX = window.innerWidth / 2; 
 const windowY = window.innerHeight / 2;
 
-onDocumentMouseMove = (event) => {
+function onDocumentMouseMove(event){
     mouseX = (event.clientX - windowX)
     mouseY = (event.clientY - windowY)
 }
+ 
+const updateSphere = (event) => {
+    sphere.position.y = window.scrollY * 0.05
+}
+
+window.addEventListener('scroll', updateSphere);
 
 const clock = new THREE.Clock()
 
@@ -127,9 +175,9 @@ const tick = () =>
     // Update objects
     sphere.rotation.y = .5 * elapsedTime
 
-    // sphere.rotation.x += .5 * (targetY - sphere.rotation.x)
-    sphere.rotation.y += .5 * (targetX - sphere.rotation.y)
-    // sphere.rotation.z += .5 * (targetY - sphere.rotation.z)
+    sphere.rotation.x += .5 * (targetY - sphere.rotation.x)
+    sphere.rotation.y += .5 * (targetX - sphere.rotation.y) 
+    sphere.position.z += 50 * (targetY - sphere.rotation.x)
 
     // Update Orbital Controls
     // controls.update()
